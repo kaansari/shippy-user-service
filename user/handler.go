@@ -1,4 +1,4 @@
-package main
+package user
 
 import (
 	"errors"
@@ -12,29 +12,29 @@ import (
 
 const topic = "user.created"
 
-type service struct {
-	repo         Repository
-	tokenService Authable
+type Service struct {
+	Repo         Repository
+	TokenService Authable
 }
 
-func (srv *service) Get(ctx context.Context, req *pb.User) (*pb.Response, error) {
-	user, err := srv.repo.Get(req.Id)
+func (srv *Service) Get(ctx context.Context, req *pb.User) (*pb.Response, error) {
+	user, err := srv.Repo.Get(req.Id)
 
 	res := &pb.Response{}
 	res.User = user
 	return res, err
 }
 
-func (srv *service) GetAll(ctx context.Context, req *pb.Request) (*pb.Response, error) {
-	users, err := srv.repo.GetAll()
+func (srv *Service) GetAll(ctx context.Context, req *pb.Request) (*pb.Response, error) {
+	users, err := srv.Repo.GetAll()
 	res := &pb.Response{}
 	res.Users = users
 	return res, err
 }
 
-func (srv *service) Auth(ctx context.Context, req *pb.User) (*pb.Token, error) {
+func (srv *Service) Auth(ctx context.Context, req *pb.User) (*pb.Token, error) {
 	log.Println("Logging in with:", req.Email, req.Password)
-	user, err := srv.repo.GetByEmail(req.Email)
+	user, err := srv.Repo.GetByEmail(req.Email)
 	log.Println(user, err)
 
 	// Compares our given password against the hashed password
@@ -43,7 +43,7 @@ func (srv *service) Auth(ctx context.Context, req *pb.User) (*pb.Token, error) {
 
 	}
 
-	token, err := srv.tokenService.Encode(user)
+	token, err := srv.TokenService.Encode(user)
 	pbToken := &pb.Token{}
 	pbToken.Token = token
 	pbToken.Valid = true
@@ -51,7 +51,7 @@ func (srv *service) Auth(ctx context.Context, req *pb.User) (*pb.Token, error) {
 	return pbToken, nil
 }
 
-func (srv *service) Create(ctx context.Context, req *pb.User) (*pb.Response, error) {
+func (srv *Service) Create(ctx context.Context, req *pb.User) (*pb.Response, error) {
 
 	log.Println("Creating user: ", req)
 
@@ -62,11 +62,11 @@ func (srv *service) Create(ctx context.Context, req *pb.User) (*pb.Response, err
 	}
 
 	req.Password = string(hashedPass)
-	if err := srv.repo.Create(req); err != nil {
+	if err := srv.Repo.Create(req); err != nil {
 		err = errors.New(fmt.Sprintf("error creating user: %v", err))
 	}
 
-	token, err := srv.tokenService.Encode(req)
+	token, err := srv.TokenService.Encode(req)
 	res := &pb.Response{}
 	res.User = req
 	res.Token = &pb.Token{Token: token}
@@ -79,10 +79,10 @@ func (srv *service) Create(ctx context.Context, req *pb.User) (*pb.Response, err
 	return res, err
 }
 
-func (srv *service) ValidateToken(ctx context.Context, req *pb.Token) (*pb.Token, error) {
+func (srv *Service) ValidateToken(ctx context.Context, req *pb.Token) (*pb.Token, error) {
 
 	// Decode token
-	claims, err := srv.tokenService.Decode(req.Token)
+	claims, err := srv.TokenService.Decode(req.Token)
 
 	if claims.User.Id == "" {
 		err = errors.New("invalid user")

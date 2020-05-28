@@ -1,10 +1,10 @@
-package main
+package user
 
 import (
 	"time"
 
-	pb "github.com/kaansari/shippy-user-service/proto/auth"
 	"github.com/dgrijalva/jwt-go"
+	pb "github.com/kaansari/shippy-user-service/proto/auth"
 )
 
 var (
@@ -29,7 +29,7 @@ type Authable interface {
 }
 
 type TokenService struct {
-	repo Repository
+	Repo Repository
 }
 
 // Decode a token string into a token object
