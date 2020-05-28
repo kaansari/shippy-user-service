@@ -2,11 +2,14 @@ package main
 
 import (
 	"log"
+	"net"
 
-	pb "github.com/EwanValentine/shippy-user-service/proto/auth"
-	"github.com/micro/go-micro"
-	_ "github.com/micro/go-plugins/registry/mdns"
-	k8s "github.com/micro/kubernetes/go/micro"
+	pb "github.com/kaansari/shippy-user-service/proto/auth"
+	"google.golang.org/grpc"
+)
+
+const (
+	port = ":50051"
 )
 
 func main() {
@@ -30,24 +33,20 @@ func main() {
 
 	tokenService := &TokenService{repo}
 
-	// Create a new service. Optionally include some options here.
-	srv := k8s.NewService(
+	// Set-up our gRPC server.
+	lis, err := net.Listen("tcp", port)
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
+	s := grpc.NewServer()
 
-		// This name must match the package name given in your protobuf definition
-		micro.Name("shippy.auth"),
-	)
+	// Register our service with the gRPC server, this will tie our
+	// implementation into the auto-generated interface code for our
+	// protobuf definition.
+	pb.RegisterAuthServer(s, &service{repo, tokenService})
 
-	// Init will parse the command line flags.
-	srv.Init()
-
-	// Will comment this out now to save having to run this locally
-	// publisher := micro.NewPublisher("user.created", srv.Client())
-
-	// Register handler
-	pb.RegisterAuthHandler(srv.Server(), &service{repo, tokenService})
-
-	// Run the server
-	if err := srv.Run(); err != nil {
-		log.Fatal(err)
+	log.Println("Running on port:", port)
+	if err := s.Serve(lis); err != nil {
+		log.Fatalf("failed to serve: %v", err)
 	}
 }

@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	pb "github.com/EwanValentine/shippy-user-service/proto/auth"
+	pb "github.com/kaansari/shippy-user-service/proto/auth"
 )
 
 var (
@@ -59,10 +59,12 @@ func TestCanCreateToken(t *testing.T) {
 func TestCanDecodeToken(t *testing.T) {
 	srv := newInstance()
 	token, err := srv.Encode(user)
+	t.Log(token)
 	if err != nil {
 		t.Fail()
 	}
 	claims, err := srv.Decode(token)
+	t.Log(claims)
 	if err != nil {
 		t.Fail()
 	}
