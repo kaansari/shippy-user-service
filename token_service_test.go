@@ -5,10 +5,11 @@ import (
 	"testing"
 
 	pb "github.com/kaansari/shippy-user-service/proto/auth"
+	"github.com/kaansari/shippy-user-service/user"
 )
 
 var (
-	user = &pb.User{
+	t_user = &pb.User{
 		Id:    "abc123",
 		Email: "ewan.valentine89@gmail.com",
 	}
@@ -35,14 +36,14 @@ func (repo *MockRepo) GetByEmail(email string) (*pb.User, error) {
 	return user, nil
 }
 
-func newInstance() Authable {
+func newInstance() user.Authable {
 	repo := &MockRepo{}
-	return &TokenService{repo}
+	return &user.TokenService{repo}
 }
 
 func TestCanCreateToken(t *testing.T) {
 	srv := newInstance()
-	token, err := srv.Encode(user)
+	token, err := srv.Encode(t_user)
 	if err != nil {
 		t.Fail()
 	}
@@ -58,7 +59,7 @@ func TestCanCreateToken(t *testing.T) {
 
 func TestCanDecodeToken(t *testing.T) {
 	srv := newInstance()
-	token, err := srv.Encode(user)
+	token, err := srv.Encode(t_user)
 	t.Log(token)
 	if err != nil {
 		t.Fail()
