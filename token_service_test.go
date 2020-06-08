@@ -11,7 +11,7 @@ import (
 var (
 	t_user = &pb.User{
 		Id:    "abc123",
-		Email: "ewan.valentine89@gmail.com",
+		Email: "khalid.a.ansari@gmail.com",
 	}
 )
 
@@ -72,7 +72,7 @@ func TestCanDecodeToken(t *testing.T) {
 	if claims.User == nil {
 		t.Fail()
 	}
-	if claims.User.Email != "ewan.valentine89@gmail.com" {
+	if claims.User.Email != "khalid.a.ansari@gmail.com" {
 		t.Fail()
 	}
 }
