@@ -33,20 +33,34 @@ func (srv *Service) GetAll(ctx context.Context, req *pb.Request) (*pb.Response, 
 }
 
 func (srv *Service) Auth(ctx context.Context, req *pb.User) (*pb.Token, error) {
-	log.Println("Logging in with:", req.Email, req.Password)
-	user, err := srv.Repo.GetByEmail(req.Email)
-	log.Println(user, err)
+	pbToken := &pb.Token{}
+	if len(req.Email) != 0 {
+		log.Println("Logging in with:", req.Email, req.Password)
+		user, err := srv.Repo.GetByEmail(req.Email)
+		log.Println(user, err)
 
-	// Compares our given password against the hashed password
-	// stored in the database
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
+		// Compares our given password against the hashed password
+		// stored in the database
+		if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
+
+		}
+		token, err := srv.TokenService.Encode(user)
+
+		pbToken.Token = token
+		pbToken.Valid = true
 
 	}
+	if len(req.Id) != 0 {
 
-	token, err := srv.TokenService.Encode(user)
-	pbToken := &pb.Token{}
-	pbToken.Token = token
-	pbToken.Valid = true
+		log.Println("Logging in with:", req.Id)
+		user, err := srv.Repo.Get(req.Id)
+		log.Println(user, err)
+		token, err := srv.TokenService.Encode(user)
+
+		pbToken.Token = token
+		pbToken.Valid = true
+
+	}
 
 	return pbToken, nil
 }
