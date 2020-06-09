@@ -25,11 +25,14 @@ func (repo *UserRepository) GetAll() ([]*pb.User, error) {
 }
 
 func (repo *UserRepository) Get(id string) (*pb.User, error) {
-	var user *pb.User
-	user.Id = id
-	if err := repo.Db.First(&user).Error; err != nil {
+
+	user := &pb.User{}
+
+	if err := repo.Db.Where("id = ?", id).
+		First(&user).Error; err != nil {
 		return nil, err
 	}
+
 	return user, nil
 }
 
