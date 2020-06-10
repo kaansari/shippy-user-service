@@ -1,7 +1,6 @@
 package user
 
 import (
-	"errors"
 	"fmt"
 	"log"
 
@@ -72,18 +71,18 @@ func (srv *Service) Create(ctx context.Context, req *pb.User) (*pb.Response, err
 	// Generates a hashed version of our password
 	hashedPass, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
-		err = errors.New(fmt.Sprintf("error hashing password: %v", err))
+		err = fmt.Errorf(err.Error())
 	}
 
 	req.Password = string(hashedPass)
 	if err := srv.Repo.Create(req); err != nil {
-		err = errors.New(fmt.Sprintf("error creating user: %v", err))
+		err = fmt.Errorf(err.Error())
 	}
 
 	token, err := srv.TokenService.Encode(req)
 	res := &pb.Response{}
 	res.User = req
-	res.Token = &pb.Token{Token: token}
+	res.Token = &pb.Token{Token: token, Valid: true}
 
 	/*
 		if err := srv.Publisher.Publish(ctx, req); err != nil {
