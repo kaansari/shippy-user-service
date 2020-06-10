@@ -34,6 +34,7 @@ func (srv *Service) GetAll(ctx context.Context, req *pb.Request) (*pb.Response, 
 
 func (srv *Service) Auth(ctx context.Context, req *pb.User) (*pb.Token, error) {
 	pbToken := &pb.Token{}
+	pbToken.Valid = false
 	if len(req.Email) != 0 {
 		log.Println("Logging in with:", req.Email, req.Password)
 		user, err := srv.Repo.GetByEmail(req.Email)
@@ -42,12 +43,10 @@ func (srv *Service) Auth(ctx context.Context, req *pb.User) (*pb.Token, error) {
 		// Compares our given password against the hashed password
 		// stored in the database
 		if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
-
+			pbToken.Valid = false
 		}
 		token, err := srv.TokenService.Encode(user)
-
 		pbToken.Token = token
-		pbToken.Valid = true
 
 	}
 	if len(req.Id) != 0 {
@@ -55,10 +54,11 @@ func (srv *Service) Auth(ctx context.Context, req *pb.User) (*pb.Token, error) {
 		log.Println("Logging in with:", req.Id)
 		user, err := srv.Repo.Get(req.Id)
 		log.Println(user, err)
-		token, err := srv.TokenService.Encode(user)
 
-		pbToken.Token = token
-		pbToken.Valid = true
+		if user != nil {
+			pbToken.Token, err = srv.TokenService.Encode(user)
+			pbToken.Valid = true
+		}
 
 	}
 
@@ -97,13 +97,12 @@ func (srv *Service) ValidateToken(ctx context.Context, req *pb.Token) (*pb.Token
 
 	// Decode token
 	claims, err := srv.TokenService.Decode(req.Token)
-
-	if claims.User.Id == "" {
-		err = errors.New("invalid user")
-	}
+	log.Println("Creating claim: ", claims, err)
 
 	validToken := &pb.Token{}
-	if err != nil {
+	validToken.Valid = false
+
+	if claims != nil {
 		validToken.Token = req.Token
 		validToken.Valid = true
 	}
