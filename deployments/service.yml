@@ -6,7 +6,9 @@ metadata:
     app: user
 spec:
   ports:
-  - port: 8080
+  - port: 50051
     protocol: TCP
+    targetPort: 50051
+  type: LoadBalancer
   selector:
     app: user

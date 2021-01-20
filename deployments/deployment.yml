@@ -1,4 +1,4 @@
-apiVersion: apps/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: user
@@ -14,24 +14,24 @@ spec:
     spec:
         containers:
         - name: user-service
-          image: ewanvalentine/user:latest
+          image: kaansari/user-service:latest
           imagePullPolicy: Always
           command: [
-            "./shippy-user-service",
+            "./user-service",
             "--selector=static",
-            "--server_address=:8080"
+            "--server_address=:50051"
           ]
           env:
           - name: DB_HOST
-            value: "postgres:5432"
+            value: "postgre-db-svc.db"
           - name: DB_NAME
-            value: "postgres"
-          - name: DB_PASS
-            value: "password"
+            value: "flexdeploy"
+          - name: DB_PASSWORD
+            value: "c67"
           - name: DB_USER
-            value: "postgres"
+            value: "creator"
           - name: UPDATED_AT
-            value: "Tue 20 Mar 2018 08:53:19 GMT"
+            value: "Wed Jan 20 15:17:44 EST 2021"
           ports:
-          - containerPort: 8080
+          - containerPort: 50051
             name: user-port
