@@ -54,7 +54,7 @@ func main() {
 
 	log.Println("Running on port:", port)
 	if err := s.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %v", err)
+		log.Fatalf("failed to  start serve: %v", err)
 	}
 }
 
