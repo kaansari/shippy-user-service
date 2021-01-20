@@ -1,11 +1,18 @@
-FROM golang:1.9.0 as builder
+FROM golang:alpine as builder
 
-WORKDIR /go/src/github.com/EwanValentine/shippy-user-service
+RUN apk update && apk upgrade && apk add --no-cache git
 
-COPY . .
+RUN mkdir /app
 
-RUN go get
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo .
+WORKDIR /app
+
+ENV GO111MODULE=on
+
+COPY . . 
+
+RUN go mod download
+
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o user-service
 
 
 FROM alpine:latest
@@ -14,6 +21,6 @@ RUN apk --no-cache add ca-certificates
 
 RUN mkdir /app
 WORKDIR /app
-COPY --from=builder /go/src/github.com/EwanValentine/shippy-user-service .
+COPY --from=builder /app/user-service .
 
-CMD ["./shippy-user-service"]
+CMD ["./user-service"]
